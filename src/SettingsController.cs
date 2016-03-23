@@ -157,8 +157,8 @@ public class SettingsController : MonoBehaviour
 	void Awake()
 	{
 		if (instance == null) instance = this;
-		
-		_savePath = Application.persistentDataPath + "/save0.dat";
+        Screen.sleepTimeout = (int)SleepTimeout.NeverSleep;
+        _savePath = Application.persistentDataPath + "/save0.dat";
 		_settings = new GameSettings();
 		
 		if (File.Exists(_savePath))
