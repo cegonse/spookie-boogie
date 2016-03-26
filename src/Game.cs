@@ -24,8 +24,9 @@ public class Game : MonoBehaviour
 		Counting = 0,
 		Playing,
 		Finished,
-		FinishedIdle
-	}
+		FinishedIdle,
+        WinFinish
+    }
 
     private float _scareLevel = 0f;
     private List<Npc> _npcs;
@@ -34,6 +35,7 @@ public class Game : MonoBehaviour
     public GameObject _furnisParent;
     public Sprite[] _floorTextures;
     public Node[] _npcPath;
+    public GameObject _exitWaypoint;
     
     public GameObject _alicePrefab;
     public GameObject _rupertPrefab;
@@ -265,13 +267,26 @@ public class Game : MonoBehaviour
 						}
 					}
 					
-					TogglePause(true);
-					_state = State.Finished;
+					if(_win)
+					{
+						_state = State.WinFinish;
+                        Node exitNode = _exitWaypoint.GetComponent<Node>();
+                        foreach (Npc n in _npcs)
+                        {
+                            n.SetDesiredNode(exitNode);
+                            n.SetAnimState(Npc.AnimState.Frightened);
+                        }
+                    }
+					else
+					{
+						_state = State.Finished;
+					}
 				}
 			}
 		}
 		else if (_state == State.Finished)
 		{
+			TogglePause(true);
 			_endWindow.SetActive(true);
 			int ownBest = SettingsController.instance.GetOwnBestScore();
 			
@@ -304,6 +319,24 @@ public class Game : MonoBehaviour
 			
 			_state = State.FinishedIdle;
 		}
+		else if (_state == State.WinFinish)
+		{
+            bool end = true;
+            Node exitNode = _exitWaypoint.GetComponent<Node>();
+            foreach (Npc n in _npcs)
+            {
+                bool is_stoped = n.GetLogicState() == Npc.LogicState.Stand;
+                if(is_stoped)
+                {
+                    n.SetPause(true);
+                }
+                end &= is_stoped;
+            }
+            if(end)
+            {
+                _state = State.Finished;
+            }
+        }
     }
     
 	public void OnPause()

@@ -13,11 +13,13 @@ public class Npc : MonoBehaviour
 	public enum LogicState : int
 	{
 		Stand,
-		Walking	
-	}
+		Walking
+	}   
 	
 	private Node _currentTarget;
 	private Node _lastTarget;
+	private Node _desiredTarget;
+	
 	public string _currentRoom;
 	private AnimState _animState = AnimState.Normal;
 	private LogicState _logicState = LogicState.Stand;
@@ -27,13 +29,12 @@ public class Npc : MonoBehaviour
 	public float[] CourageDamage;
 	public float _backProbability;
 	public AudioClip _sound;
-	private float _timerWalk;
 	private int _pointWalkCount;
 	private float _waitTimer = 0f;
 	
 	private float _speed = 5f;
 	private Game _game;
-	private bool _paused = false;
+	public bool _paused = false;
 	private SpriteAnimatorNpc snpc;
 	
 	public void Awake()
@@ -164,8 +165,36 @@ public class Npc : MonoBehaviour
 			}
 		} 
 	}
-		
+	
 	public void MoveToNextPoint()
+	{
+		if(_desiredTarget)
+		{
+			MoveToDesiredNode(_desiredTarget);
+
+        }
+		else
+		{
+			MoveToRandomPoint();
+		}
+	}
+	
+	private void MoveToDesiredNode(Node target)
+	{
+        Node n = _currentTarget.NextNodeTo(target);
+        if (n == null || n == target) //Finish
+        {
+            SpriteAnimatorNpc snpc = GetComponent<SpriteAnimatorNpc>();
+            _logicState = LogicState.Stand;
+        }
+        else
+        {
+            _currentTarget = n;
+        }
+        
+	}
+
+	private void MoveToNextRandomPoint()
 	{
 		_pointWalkCount--;
 		
@@ -220,6 +249,12 @@ public class Npc : MonoBehaviour
 			SpriteAnimatorNpc snpc = GetComponent<SpriteAnimatorNpc>();
 			snpc.StopSpriteAnimator(true);
 		}
+	}
+	
+	public void SetDesiredNode(Node n)
+	{
+		_desiredTarget = n;
+        _logicState = LogicState.Walking;
 	}
 	
 	public void ChangeState(Furniture f)
@@ -368,4 +403,8 @@ public class Npc : MonoBehaviour
 			GetComponent<SpriteRenderer>().color = c;
 		}
 	}
+    public LogicState GetLogicState()
+    {
+        return _logicState;
+    }
 }
