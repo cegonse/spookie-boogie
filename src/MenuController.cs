@@ -440,17 +440,47 @@ public class MenuController : MonoBehaviour
 			if (s.x < 0f)
 			{
 				_extrasMenu.SetActive(false);
-				_mainMenu.SetActive(true);
-				_state = State.FadingInMainMenu;
+				
+				if (_targetState == State.FadingInMainMenu)
+				{
+					_mainMenu.SetActive(true);
+					_mainMenu.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
+				}
+				else if (_targetState == State.FadingInCreditsMenu)
+				{
+					_creditsMenu.SetActive(true);
+					_creditsMenu.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
+				}
+				
+				_state = _targetState;
 			}
 		}
 		else if (_state == State.FadingInCreditsMenu)
 		{
-		
+			Vector3 s = _creditsMenu.transform.localScale;
+			s.x += Time.deltaTime*4f;
+			s.y += Time.deltaTime*4f;
+			_creditsMenu.transform.localScale = s;
+			
+			if (s.x > 1f)
+			{
+				_state = State.IdleCreditsMenu;
+			}
 		}
 		else if (_state == State.FadingOutCreditsMenu)
 		{
+			Vector3 s = _creditsMenu.transform.localScale;
+			s.x -= Time.deltaTime*4f;
+			s.y -= Time.deltaTime*4f;
+			_creditsMenu.transform.localScale = s;
 			
+			if (s.x < 0f)
+			{
+				_creditsMenu.SetActive(false);
+				_extrasMenu.SetActive(true);
+				_extrasMenu.transform.localScale = new Vector3(0.1f, 0.1f, 1f);
+				_state = State.FadingInExtrasMenu;
+			}
 		}
 	}
 	
@@ -553,7 +583,29 @@ public class MenuController : MonoBehaviour
 	
 	public void OnExtrasBack()
 	{
+		_targetState = State.FadingInMainMenu;
 		_state = State.FadingOutExtrasMenu;
+	}
+	
+	public void OnCredits()
+	{
+		_targetState = State.FadingInCreditsMenu;
+		_state = State.FadingOutExtrasMenu;
+	}
+	
+	public void OnCreditsBack()
+	{
+		_state = State.FadingOutCreditsMenu;
+	}
+	
+	public void OnCutscene()
+	{
+		
+	}
+	
+	public void OnTutorial()
+	{
+		
 	}
 	
 	public void OnRanking()
